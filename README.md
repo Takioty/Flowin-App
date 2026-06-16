@@ -1,5 +1,5 @@
 # Flowin-App
-Flowin 📋
+Flowin 📋 *Ainda em desenvovimento*
 O Flowin é um ecossistema integrado de produtividade desenvolvido em Python utilizando o framework Streamlit. O objetivo central da aplicação é consolidar diversas ferramentas de organização pessoal — foco, finanças e gestão de tarefas — em uma interface única, moderna e intuitiva.
 
 🚀 Funcionalidades Principais
