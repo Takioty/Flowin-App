@@ -11,11 +11,6 @@ import time
 from google import genai  # Nova biblioteca oficial para o Assistente IA
 
 # ==========================================
-# CONFIGURAÇÃO DA CHAVE DA IA (GEMINI)
-# ==========================================
-GEMINI_API_KEY = "AQ.Ab8RN6KFxChiSKdR1pgqIHtrn25_u-stnxTyKF6xta5WTeP9Tw" 
-
-# ==========================================
 # CONFIGURAÇÃO DA PÁGINA
 # ==========================================
 
@@ -303,7 +298,12 @@ if "notas" not in state:
         {
             "id": str(uuid.uuid4()),
             "titulo": "⚠️ Log de Bug #02 - KeyError: 'id'",
-            "conteudo": "Dificuldade encontrada: Após atualizar a estrutura da lixeira para usar UUIDs únicos, os dados antigos salvos no cache do navegador que não possuíam o campo 'id' geravam uma exceção fatal. Corrigido adicionando um laço de verificação preventiva e limpeza na inicialização do app."
+            "conteudo": "Dificuldade encontrada: Após atualizar a estrutura da lixeira para usar UUIDs únicos, os dados antigos salvos no cache do navegador que não possuiu o campo 'id' geravam uma exceção fatal. Corrigido adicionando um laço de verificação preventiva e limpeza na inicialização do app."
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "titulo": "🛑 Log de Bug #08 - Rate Limit (Erro 429)",
+            "conteudo": "Dificuldade encontrada: Ao realizar testes seguidos na Verity IA no plano gratuito, o Google bloqueou as requisições por esgotamento de quota por minuto (RESOURCE_EXHAUSTED). Implementado painel dinâmico de chaves para evitar travamentos de quota compartilhada."
         }
     ]
 
@@ -350,6 +350,12 @@ with st.sidebar:
 
     st.markdown("<div class='custom-hr'></div>", unsafe_allow_html=True)
     
+    # Gerenciamento Dinâmico de API Keys para mitigar Erros 429
+    st.markdown("### 🔑 Token Gemini")
+    api_key_usuario = st.text_input("Insira sua Gemini API Key", type="password", placeholder="AI Studio Key...", value="AQ.Ab8RN6KFxChiSKdR1pgqIHtrn25_u-stnxTyKF6xta5WTeP9Tw")
+    st.markdown("[Pegar chave no AI Studio](https://aistudio.google.com/app/apikey)", unsafe_allow_html=True)
+    
+    st.markdown("<div class='custom-hr' style='margin-top:15px;'></div>", unsafe_allow_html=True)
     st.markdown("<p class='menu-label'>Menu</p>", unsafe_allow_html=True)
 
     pagina = st.radio(
@@ -377,7 +383,7 @@ with st.sidebar:
 
 if pagina == "🏠 Início":
     st.title("🚀 Bem-vindo ao Flowin")
-    st.subheader("Seu espaço integrado para foco, organization e controle")
+    st.subheader("Seu espaço integrado para foco, organização e controle")
     st.divider()
     
     st.markdown("### 🛠️ Explore as Funcionalidades")
@@ -483,8 +489,8 @@ elif pagina == "🙂 Assistente IA":
         with st.chat_message("assistant"):
             placeholder_resposta = st.empty()
             
-            if GEMINI_API_KEY == "SUA_CHAVE_AQUI" or not GEMINI_API_KEY:
-                placeholder_resposta.error("Erro de Configuração: Insira uma Chave de API do Gemini válida na variável 'GEMINI_API_KEY' no topo do código para ativar o Assistente.")
+            if not api_key_usuario or api_key_usuario == "SUA_CHAVE_AQUI":
+                placeholder_resposta.error("Erro de Configuração: Insira uma Chave de API do Gemini válida na barra lateral esquerda para ativar o Assistente.")
             else:
                 try:
                     with st.spinner("Verity está analisando seus dados e pensando..."):
@@ -525,16 +531,16 @@ elif pagina == "🙂 Assistente IA":
                         contexto_sistema += "Responda à pergunta do usuário considerando esses dados acima sempre que fizer sentido."
 
                         # Conversão do histórico interno do app para o formato esperado pela SDK oficial
-                        historico_formatado = []
+                        historico_formatated = []
                         for m in state.historico_ia[:-1]: # ignora o último prompt que acabou de entrar
                             role_sdk = "user" if m["role"] == "user" else "model"
-                            historico_formatado.append(genai.types.Content(
+                            historico_formatated.append(genai.types.Content(
                                 role=role_sdk,
                                 parts=[genai.types.Part.from_text(text=m["content"])]
                             ))
 
-                        # Inicializa o cliente usando o modelo recomendado
-                        client = genai.Client(api_key=GEMINI_API_KEY)
+                        # Inicializa o cliente usando a chave ativa da barra lateral e o modelo recomendado
+                        client = genai.Client(api_key=api_key_usuario)
                         
                         # Inicia o chat com as diretrizes do sistema e histórico prévio
                         chat = client.chats.create(
@@ -543,7 +549,7 @@ elif pagina == "🙂 Assistente IA":
                                 system_instruction=contexto_sistema,
                                 temperature=0.7
                             ),
-                            history=historico_formatado
+                            history=historico_formatated
                         )
                         
                         # Envia a pergunta do usuário e obtém a resposta
@@ -702,122 +708,4 @@ elif pagina == "📓 Notas":
                     <p style='color:#e2e8f0; white-space: pre-wrap; font-size:15px; line-height:1.5;'>{nota['conteudo']}</p>
                 </div>
                 """, unsafe_allow_html=True)
-                st.button("🗑️ Excluir Nota", key=f"del_nota_{nota['id']}", on_click=remover_nota, args=[nota['id']])
-                st.write("") 
-    else:
-        st.info("Nenhuma nota criada ainda.")
-
-# ==========================================
-# PAGINA: TO-DO LIST
-# ==========================================
-
-elif pagina == "📝 To-do List":
-    @dataclass
-    class Todo:
-        text: str
-        is_done: bool = False
-        uid: uuid.UUID = field(default_factory=uuid.uuid4)
-
-    if "todos" not in state:
-        state.todos = [
-            Todo(text="Comprar leite"),
-            Todo(text="Lavar louça"),
-            Todo(text="Estudar Python")
-        ]
-
-    def remove_todo(i):
-        state.todos.pop(i)
-
-    def add_todo():
-        if state.new_item_text != "":
-            state.todos.append(Todo(text=state.new_item_text))
-            state.new_item_text = ""
-
-    def check_todo(i, novo_valor):
-        state.todos[i].is_done = novo_valor
-
-    def delete_all_checked():
-        state.todos = [t for t in state.todos if not t.is_done]
-
-    st.title("📝 To-do List")
-    with st.form(key="new_item_form", border=False):
-        st.text_input("Nova tarefa", key="new_item_text")
-        st.form_submit_button("Adicionar", on_click=add_todo)
-
-    if state.todos:
-        for i, todo in enumerate(state.todos):
-            col1, col2 = st.columns([8,1])
-            with col1:
-                st.checkbox(todo.text, value=todo.is_done, on_change=check_todo, args=[i, not todo.is_done], key=f"todo-{todo.uid}")
-            with col2:
-                st.button("🗑️", on_click=remove_todo, args=[i], key=f"delete_{i}")
-        st.button("Apagar concluídas", on_click=delete_all_checked)
-    else:
-        st.info("Nenhuma tarefa cadastrada.")
-
-# ==========================================
-# PAGINA: POMODORO
-# ==========================================
-
-elif pagina == "⏱️ Pomodoro":
-    st.header("⏱️ Cronômetro Pomodoro")
-    st.caption("Controle seu tempo de estudo de forma eficiente com pausas programadas.")
-
-    col_stat1, col_stat2 = st.columns(2)
-    with col_stat1:
-        st.metric(label="🎓 Total de Tempo Estudado", value=f"{state.tempo_estudado} min")
-    with col_stat2:
-        st.metric(label="🔄 Ciclos de Foco Completados", value=f"{state.tempo_estudado // 25}")
-
-    st.divider()
-
-    modo_selecionado = st.radio("Selecione o modo:", ["🎯 Foco (25 min)", "☕ Pausa Curta (5 min)"], horizontal=True)
-    
-    if modo_selecionado != state.modo_atual:
-        state.modo_atual = modo_selecionado
-        state.pomodoro_segundos_restantes = 25 * 60 if "Foco" in modo_selecionado else 5 * 60
-        state.pomodoro_rodando = False
-
-    texto_cronometro = st.empty()
-
-    c_btn1, c_btn2, c_btn3 = st.columns([1, 1, 4])
-
-    if not state.pomodoro_rodando:
-        if c_btn1.button("🚀 Iniciar"):
-            state.pomodoro_rodando = True
-            st.rerun()
-    else:
-        if c_btn1.button("⏸️ Pausar"):
-            state.pomodoro_rodando = False
-            st.rerun()
-
-    if c_btn2.button("🔄 Reiniciar"):
-        state.pomodoro_segundos_restantes = 25 * 60 if "Foco" in state.modo_atual else 5 * 60
-        state.pomodoro_rodando = False
-        st.rerun()
-
-    if state.pomodoro_rodando and state.pomodoro_segundos_restantes > 0:
-        mins, segs = divmod(state.pomodoro_segundos_restantes, 60)
-        texto_cronometro.markdown(f"<div class='pomodoro-display'>{mins:02d}:{segs:02d}</div>", unsafe_allow_html=True)
-        time.sleep(1)
-        state.pomodoro_segundos_restantes -= 1
-        st.rerun()
-    
-    elif state.pomodoro_segundos_restantes == 0:
-        state.pomodoro_rodando = False
-        if "Foco" in state.modo_atual:
-            state.tempo_estudado += 25  
-            st.balloons()
-            st.success("Excelente! +25 minutes computados no seu painel. Descanse um pouco!")
-            state.modo_atual = "☕ Pausa Curta (5 min)"
-            state.pomodoro_segundos_restantes = 5 * 60
-        else:
-            st.toast("Fim do descanso! 🎯")
-            st.success("Pausa finalizada! Pronto para focar novamente?")
-            state.modo_atual = "🎯 Foco (25 min)"
-            state.pomodoro_segundos_restantes = 25 * 60
-        st.rerun()
-        
-    else:
-        mins, segs = divmod(state.pomodoro_segundos_restantes, 60)
-        texto_cronometro.markdown(f"<div class='pomodoro-display'>{mins:02d}:{segs:02d}</div>", unsafe_allow_html=True)
+                st.button("🗑️ Excluir Nota", key=f"del_nota_{nota['id']}", on_click=re
