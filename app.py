@@ -289,6 +289,11 @@ if "notas" not in state:
     state.notas = [
         {
             "id": str(uuid.uuid4()),
+            "titulo": "🔑 APIs para Teste (Pedro e Nicolas)",
+            "conteudo": "API PARA TESTE:\n(Nicolas) AQ.Ab8RN6I4odnWqri4d50IrCfNhWC-5B_i9o09f60aoA5yc2b_UA\n\n(Pedro) AQ.Ab8RN6KqEwJSTrp91iQcZ3gWGGCuGzxMlM75j6-GfR927AO_eQ"
+        },
+        {
+            "id": str(uuid.uuid4()),
             "titulo": "🐛 Log de Bug #01 - Conflito no st.form",
             "conteudo": "Dificuldade encontrada: Ao alternar entre as abas do menu lateral, o Streamlit destruía as variáveis de formulário ativas. Isso causava uma quebra na aplicação sempre que tentávamos salvar uma Tarefa ou Finança usando callbacks de botão comum (on_click)."
         },
@@ -385,7 +390,7 @@ with st.sidebar:
 
 if pagina == "🏠 Início":
     st.title("🚀 Bem-vindo ao Flowin")
-    st.subheader("Seu espaço integrado para foco, organization e controle")
+    st.subheader("Seu espaço integrado para foco, organização e controle")
     st.divider()
     
     st.markdown("### 🛠️ Explore as Funcionalidades")
@@ -500,14 +505,15 @@ elif pagina == "🙂 Assistente IA":
                         contexto_sistema = (
                             "Você é a Verity, a Assistente Virtual nativa do aplicativo 'Flowin', focado em produtividade e organização pessoal. "
                             "Apresente-se e responda como Verity. Seja empática, direta, organizada e use formatação markdown quando útil. "
-                            "Aqui estão os dados reais antigos do usuário dentro do aplicativo para você usar como contexto nas respostas:\n\n"
+                            "Aqui estão os dados reais atuais do usuário dentro do aplicativo para você usar como contexto nas respostas:\n\n"
                         )
                         
                         # Injetando tarefas
                         contexto_sistema += "--- TAREFAS AGENDADAS ---\n"
                         if state.tarefas:
                             for t in state.tarefas:
-                                contexto_sistema += f"- Tarefa: {t['Nome']} | Prioridade: {t['Prioridade']} | Prazo: {t['Data']}\n"
+                                sizeof = f"- Tarefa: {t['Nome']} | Prioridade: {t['Prioridade']} | Prazo: {t['Data']}\n"
+                                contexto_sistema += sizeof
                         else:
                             contexto_sistema += "O usuário não possui tarefas cadastradas no momento.\n"
                             
@@ -572,7 +578,6 @@ elif pagina == "🙂 Assistente IA":
 elif pagina == "✅ Tarefas":
     st.header("✅ Área de Tarefas")
 
-    # Função de Callback para remover tarefas por ID único de forma limpa e otimizada
     def remover_tarefa(id_tarefa):
         state.tarefas = [t for t in state.tarefas if t["id"] != id_tarefa]
         st.toast("Tarefa removida! 🗑️")
