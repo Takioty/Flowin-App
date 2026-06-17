@@ -345,7 +345,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<p class='sidebar-title-top'>📋 Flowin</p>", unsafe_allow_html=True)
+    st.markdown("<p class='sidebar-title-top'> Flowin</p>", unsafe_allow_html=True)
     st.markdown("<p class='sidebar-description'>Seu organizador pessoal feito somente para você.</p>", unsafe_allow_html=True)
 
     st.markdown("<div class='custom-hr'></div>", unsafe_allow_html=True)
@@ -370,7 +370,7 @@ with st.sidebar:
     <div class='sidebar-footer-container'>
         <p class='sidebar-title-bottom'>💜 Flowin</p>
         <div class='sidebar-footer-credits'>
-            Feito com carinho por <b>Pedro e Nicolas</b><br>
+            Feito por <b>Pedro Eduardo e Nicolas Palma</b><br>
             Orientador: <b>Prof. Anderson</b><br>
             <i>Desenvolvido em Streamlit</i>
         </div>
