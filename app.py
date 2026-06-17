@@ -341,7 +341,7 @@ with st.sidebar:
     st.markdown("""
     <div class='user-profile-container'>
         <div class='user-avatar-circle'></div>
-        <span class='user-profile-name'>usuário_1</span>
+        <span class='user-profile-name'>Anderson.Vaz</span>
     </div>
     """, unsafe_allow_html=True)
     
