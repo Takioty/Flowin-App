@@ -23,7 +23,7 @@ st.set_page_config(
 state = st.session_state
 
 # ==========================================
-# CSS PREMIUM: INSPIRADO NAS REFERÊNCIAS
+# INSPIRADO NAS REFERÊNCIAS COMO NOTION E GOOGLE NOTES
 # ==========================================
 
 st.markdown("""
@@ -351,6 +351,7 @@ with st.sidebar:
     st.markdown("<div class='custom-hr'></div>", unsafe_allow_html=True)
     
     # Gerenciamento Dinâmico de API Keys para mitigar Erros 429
+    # puta que pariu! como a gete ajeita essa merda, nem o chat tá conseguindo
     st.markdown("### 🔑 Token Gemini")
     api_key_usuario = st.text_input("Insira sua Gemini API Key", type="password", placeholder="AI Studio Key...", value="AQ.Ab8RN6KFxChiSKdR1pgqIHtrn25_u-stnxTyKF6xta5WTeP9Tw")
     st.markdown("[Pegar chave no AI Studio](https://aistudio.google.com/app/apikey)", unsafe_allow_html=True)
@@ -368,7 +369,7 @@ with st.sidebar:
 
     st.markdown("""
     <div class='sidebar-footer-container'>
-        <p class='sidebar-title-bottom'>💜 Flowin</p>
+        <p class='sidebar-title-bottom'>💜 Flowin 💜</p>
         <div class='sidebar-footer-credits'>
             Feito por <b>Pedro Eduardo e Nicolas Palma</b><br>
             Orientador: <b>Prof. Anderson</b><br>
@@ -473,6 +474,7 @@ elif pagina == "🙂 Assistente IA":
     st.divider()
 
     # Renderiza todas as mensagens salvas na memória
+    #Deixa isso pro gemini, Nico larga disso
     for msg in state.historico_ia:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
@@ -540,6 +542,7 @@ elif pagina == "🙂 Assistente IA":
                             ))
 
                         # Inicializa o cliente usando a chave ativa da barra lateral e o modelo recomendado
+                        # Tu não pode dar a tua api, dá erro no git
                         client = genai.Client(api_key=api_key_usuario)
                         
                         # Inicia o chat com as diretrizes do sistema e histórico prévio
@@ -566,7 +569,7 @@ elif pagina == "🙂 Assistente IA":
 # ==========================================
 # PAGINA: TAREFAS
 # ==========================================
-
+# Inspirado no negócio da biblioteca do Streamlit
 elif pagina == "✅ Tarefas":
     st.header("✅ Área de Tarefas")
 
