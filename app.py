@@ -298,7 +298,7 @@ if "notas" not in state:
         {
             "id": str(uuid.uuid4()),
             "titulo": "⚠️ Log de Bug #02 - KeyError: 'id'",
-            "conteudo": "Dificuldade encontrada: Após atualizar a estrutura da lixeira para usar UUIDs únicos, os dados antigos salvos no cache do navegador que não possuiu o campo 'id' geravam uma exceção fatal. Corrigido adicionando um laço de verificação preventiva e limpeza na inicialização do app."
+            "conteudo": "Dificuldade encontrada: Após atualizar a estrutura da lixeira para usar UUIDs únicos, os dados antigos salvos no cache do navegador que não possuíam o campo 'id' geravam uma exceção fatal. Corrigido adicionando um laço de verificação preventiva e limpeza na inicialização do app."
         },
         {
             "id": str(uuid.uuid4()),
@@ -708,4 +708,124 @@ elif pagina == "📓 Notas":
                     <p style='color:#e2e8f0; white-space: pre-wrap; font-size:15px; line-height:1.5;'>{nota['conteudo']}</p>
                 </div>
                 """, unsafe_allow_html=True)
-                st.button("🗑️ Excluir Nota", key=f"del_nota_{nota['id']}", on_click=re
+                
+                # LINHA CORRIGIDA E COMPLETA AQUI
+                st.button("🗑️ Excluir Nota", key=f"del_nota_{nota['id']}", on_click=remover_nota, args=[nota['id']])
+                st.write("") 
+    else:
+        st.info("Nenhuma nota criada ainda.")
+
+# ==========================================
+# PAGINA: TO-DO LIST
+# ==========================================
+
+elif pagina == "📝 To-do List":
+    @dataclass
+    class Todo:
+        text: str
+        is_done: bool = False
+        uid: uuid.UUID = field(default_factory=uuid.uuid4)
+
+    if "todos" not in state:
+        state.todos = [
+            Todo(text="Comprar leite"),
+            Todo(text="Lavar louça"),
+            Todo(text="Estudar Python")
+        ]
+
+    def remove_todo(i):
+        state.todos.pop(i)
+
+    def add_todo():
+        if state.new_item_text != "":
+            state.todos.append(Todo(text=state.new_item_text))
+            state.new_item_text = ""
+
+    def check_todo(i, novo_valor):
+        state.todos[i].is_done = novo_valor
+
+    def delete_all_checked():
+        state.todos = [t for t in state.todos if not t.is_done]
+
+    st.title("📝 To-do List")
+    with st.form(key="new_item_form", border=False):
+        st.text_input("Nova tarefa", key="new_item_text")
+        st.form_submit_button("Adicionar", on_click=add_todo)
+
+    if state.todos:
+        for i, todo in enumerate(state.todos):
+            col1, col2 = st.columns([8,1])
+            with col1:
+                st.checkbox(todo.text, value=todo.is_done, on_change=check_todo, args=[i, not todo.is_done], key=f"todo-{todo.uid}")
+            with col2:
+                st.button("🗑️", on_click=remove_todo, args=[i], key=f"delete_{i}")
+        st.button("Apagar concluídas", on_click=delete_all_checked)
+    else:
+        st.info("Nenhuma tarefa cadastrada.")
+
+# ==========================================
+# PAGINA: POMODORO
+# ==========================================
+
+elif pagina == "⏱️ Pomodoro":
+    st.header("⏱️ Cronômetro Pomodoro")
+    st.caption("Controle seu tempo de estudo de forma eficiente com pausas programadas.")
+
+    col_stat1, col_stat2 = st.columns(2)
+    with col_stat1:
+        st.metric(label="🎓 Total de Tempo Estudado", value=f"{state.tempo_estudado} min")
+    with col_stat2:
+        st.metric(label="🔄 Ciclos de Foco Completados", value=f"{state.tempo_estudado // 25}")
+
+    st.divider()
+
+    modo_selecionado = st.radio("Selecione o modo:", ["🎯 Foco (25 min)", "☕ Pausa Curta (5 min)"], horizontal=True)
+    
+    if modo_selecionado != state.modo_atual:
+        state.modo_atual = modo_selecionado
+        state.pomodoro_segundos_restantes = 25 * 60 if "Foco" in modo_selecionado else 5 * 60
+        state.pomodoro_rodando = False
+
+    texto_cronometro = st.empty()
+
+    c_btn1, c_btn2, c_btn3 = st.columns([1, 1, 4])
+
+    if not state.pomodoro_rodando:
+        if c_btn1.button("🚀 Iniciar"):
+            state.pomodoro_rodando = True
+            st.rerun()
+    else:
+        if c_btn1.button("⏸️ Pausar"):
+            state.pomodoro_rodando = False
+            st.rerun()
+
+    if c_btn2.button("🔄 Reiniciar"):
+        state.pomodoro_segundos_restantes = 25 * 60 if "Foco" in state.modo_atual else 5 * 60
+        state.pomodoro_rodando = False
+        st.rerun()
+
+    if state.pomodoro_rodando and state.pomodoro_segundos_restantes > 0:
+        mins, segs = divmod(state.pomodoro_segundos_restantes, 60)
+        texto_cronometro.markdown(f"<div class='pomodoro-display'>{mins:02d}:{segs:02d}</div>", unsafe_allow_html=True)
+        time.sleep(1)
+        state.pomodoro_segundos_restantes -= 1
+        st.rerun()
+    
+    elif state.pomodoro_segundos_restantes == 0:
+        state.pomodoro_rodando = False
+        if "Foco" in state.modo_atual:
+            state.tempo_estudado += 25  
+            st.balloons()
+            st.success("Excelente! +25 minutos computados no seu painel. Descanse um pouco!")
+            state.modo_atual = "☕ Pausa Curta (5 min)"
+            state.pomodoro_segundos_restantes = 5 * 60
+        else:
+            st.toast("Fim do descanso! 🎯")
+            st.success("Pausa finalizada! Pronto para focar novamente?")
+            state.modo_atual = "🎯 Foco (25 min)"
+            state.pomodoro_segundos_restantes = 25 * 60
+        st.rerun()
+        
+    else:
+        mins, segs = divmod(state.pomodoro_segundos_restantes, 60)
+        texto_cronometro.markdown(f"<div class='pomodoro-display'>{mins:02d}:{segs:02d}</div>", unsafe_allow_html=True)
