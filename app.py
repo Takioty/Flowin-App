@@ -8,7 +8,9 @@ import uuid
 import pandas as pd
 import plotly.express as px
 import time
-from google import genai  # Nova biblioteca oficial para o Assistente IA
+from google import genai 
+
+# Nova biblioteca oficial para o Assistente IA
 
 # ==========================================
 # CONFIGURAÇÃO DA PÁGINA
@@ -114,7 +116,7 @@ st.markdown("""
 [data-testid="stSidebar"] div[role="radiogroup"] [data-testid="stWidgetRadioDot"],
 [data-testid="stSidebar"] div[role="radiogroup"] [data-testid="stWidgetRadioDot"]::before,
 [data-testid="stSidebar"] div[role="radiogroup"] [data-testid="stWidgetRadioDot"]::after,
-[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+[data-testid="stSidebar"] label > div:first-child {
     display: none !important;
     width: 0px !important;
     height: 0px !important;
@@ -351,9 +353,8 @@ with st.sidebar:
     st.markdown("<div class='custom-hr'></div>", unsafe_allow_html=True)
     
     # Gerenciamento Dinâmico de API Keys para mitigar Erros 429
-    # puta que pariu! como a gete ajeita essa merda, nem o chat tá conseguindo
     st.markdown("### 🔑 Token Gemini")
-    api_key_usuario = st.text_input("Insira sua Gemini API Key", type="password", placeholder="AI Studio Key...", value="AQ.Ab8RN6KFxChiSKdR1pgqIHtrn25_u-stnxTyKF6xta5WTeP9Tw")
+    api_key_usuario = st.text_input("Insira sua Gemini API Key", type="password", placeholder="AI Studio Key...", value="")
     st.markdown("[Pegar chave no AI Studio](https://aistudio.google.com/app/apikey)", unsafe_allow_html=True)
     
     st.markdown("<div class='custom-hr' style='margin-top:15px;'></div>", unsafe_allow_html=True)
@@ -384,7 +385,7 @@ with st.sidebar:
 
 if pagina == "🏠 Início":
     st.title("🚀 Bem-vindo ao Flowin")
-    st.subheader("Seu espaço integrado para foco, organização e controle")
+    st.subheader("Seu espaço integrado para foco, organization e controle")
     st.divider()
     
     st.markdown("### 🛠️ Explore as Funcionalidades")
@@ -474,7 +475,6 @@ elif pagina == "🙂 Assistente IA":
     st.divider()
 
     # Renderiza todas as mensagens salvas na memória
-    #Deixa isso pro gemini, Nico larga disso
     for msg in state.historico_ia:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
@@ -491,7 +491,7 @@ elif pagina == "🙂 Assistente IA":
         with st.chat_message("assistant"):
             placeholder_resposta = st.empty()
             
-            if not api_key_usuario or api_key_usuario == "SUA_CHAVE_AQUI":
+            if not api_key_usuario or api_key_usuario.strip() == "":
                 placeholder_resposta.error("Erro de Configuração: Insira uma Chave de API do Gemini válida na barra lateral esquerda para ativar o Assistente.")
             else:
                 try:
@@ -500,7 +500,7 @@ elif pagina == "🙂 Assistente IA":
                         contexto_sistema = (
                             "Você é a Verity, a Assistente Virtual nativa do aplicativo 'Flowin', focado em produtividade e organização pessoal. "
                             "Apresente-se e responda como Verity. Seja empática, direta, organizada e use formatação markdown quando útil. "
-                            "Aqui estão os dados reais atuais do usuário dentro do aplicativo para você usar como contexto nas respostas:\n\n"
+                            "Aqui estão os dados reais antigos do usuário dentro do aplicativo para você usar como contexto nas respostas:\n\n"
                         )
                         
                         # Injetando tarefas
@@ -542,7 +542,6 @@ elif pagina == "🙂 Assistente IA":
                             ))
 
                         # Inicializa o cliente usando a chave ativa da barra lateral e o modelo recomendado
-                        # Tu não pode dar a tua api, dá erro no git
                         client = genai.Client(api_key=api_key_usuario)
                         
                         # Inicia o chat com as diretrizes do sistema e histórico prévio
@@ -569,10 +568,11 @@ elif pagina == "🙂 Assistente IA":
 # ==========================================
 # PAGINA: TAREFAS
 # ==========================================
-# Inspirado no negócio da biblioteca do Streamlit
+
 elif pagina == "✅ Tarefas":
     st.header("✅ Área de Tarefas")
 
+    # Função de Callback para remover tarefas por ID único de forma limpa e otimizada
     def remover_tarefa(id_tarefa):
         state.tarefas = [t for t in state.tarefas if t["id"] != id_tarefa]
         st.toast("Tarefa removida! 🗑️")
@@ -712,7 +712,6 @@ elif pagina == "📓 Notas":
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # LINHA CORRIGIDA E COMPLETA AQUI
                 st.button("🗑️ Excluir Nota", key=f"del_nota_{nota['id']}", on_click=remover_nota, args=[nota['id']])
                 st.write("") 
     else:
